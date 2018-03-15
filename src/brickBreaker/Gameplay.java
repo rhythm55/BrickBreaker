@@ -1,5 +1,6 @@
 package brickBreaker;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -7,7 +8,6 @@ import java.awt.event.KeyListener;
 import java.awt.Color;
 
 import javax.swing.JPanel;
-
 import javax.swing.Timer;
 public class Gameplay extends JPanel implements KeyListener,ActionListener {
 
@@ -25,9 +25,9 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 	private int ballposX=120;
 	private int ballposY=350;
 	
-	//diretion of ball at intial stage
+	//direction of ball at initial stage
 	private int ballXdir=-1;
-	private int vallYdir=-2;
+	private int ballYdir=-2;
 	
 	public Gameplay()
 	{
@@ -66,6 +66,29 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 	
 	public void actionPerformed(ActionEvent e) {
 		timer.start();
+		//movement of ball
+		if(play)
+		{
+			//for detecting the intersection of ball and slider
+			if(new Rectangle(ballposX,ballposY,20,20).intersects(new Rectangle(playerX,550,100,8)))
+			{
+				ballYdir=-ballYdir;
+			}
+			ballposX+=ballXdir;
+			ballposY+=ballYdir;
+			if(ballposX<0)//for left
+			{
+				ballXdir =-ballXdir;
+			}
+			if(ballposY<0)//for top
+			{
+				ballYdir =-ballYdir;
+			}
+			if(ballposX>670)//for right
+			{
+				ballXdir =-ballXdir;
+			}
+		}
 		repaint(); //this inbuilt function will call the paint function again so that whenever the player's position is changed all the attributes are changed and we will get to know the occured change
 		
 	}

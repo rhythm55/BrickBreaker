@@ -1,5 +1,7 @@
 package brickBreaker;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +15,7 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 
 	private boolean play=false;
 	private int score=0;
-	private int totalbocks=21;
+	private int totalbricks=21;
 	
 	//speed on which ball will move with time delay 
 	private Timer timer;
@@ -29,8 +31,11 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 	private int ballXdir=-1;
 	private int ballYdir=-2;
 	
+	private MapGenerator map;
+	
 	public Gameplay()
 	{
+		map=new MapGenerator(3,7);
 		addKeyListener(this);
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
@@ -44,12 +49,20 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 		g.setColor(Color.black);
 		g.fillRect(1,1,692,592);
 		
+		//drawing map
+		map.draw((Graphics2D)g);
+		
 		//borders 
 		g.setColor(Color.yellow);
 		g.fillRect(0,0,3,592);
 		g.fillRect(0,0,692,3);
 		g.fillRect(691,0,3,592);
 		//here no border for down side
+		
+		//score display
+		g.setColor(Color.white);
+		g.setFont(new Font("serif",Font.BOLD,25));
+		g.drawString("Score:"+score,590,30);
 		
 		//paddle
 		g.setColor(Color.green);
@@ -59,6 +72,34 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 		g.setColor(Color.yellow);
 		g.fillOval(ballposX,ballposY,20,20);
 		// we added variable value as we want to change position according to movement
+		
+	    //if we ends the game
+		if(totalbricks==0)
+		{
+			play=false;
+			ballXdir=0;
+			ballYdir=0;
+			g.setColor(Color.RED);
+			g.setFont(new Font("serif",Font.BOLD,30));
+			g.drawString("you won",190,300);
+			
+			g.setFont(new Font("serif",Font.BOLD,20));
+			g.drawString("press enter to start",250,350);
+		}
+		
+		//if ball is not touched by slider and games end
+		if(ballposY>570){
+			play=false;
+			ballXdir=0;
+			ballYdir=0;
+			g.setColor(Color.RED);
+			g.setFont(new Font("serif",Font.BOLD,30));
+			g.drawString("Game-over,score:"+score,190,300);
+			
+			
+			g.setFont(new Font("serif",Font.BOLD,20));
+			g.drawString("press enter to start",250,350);
+		}
 		
 		g.dispose();
 	}
@@ -74,6 +115,43 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 			{
 				ballYdir=-ballYdir;
 			}
+			
+		A:	for(int i=0;i<map.map.length;i++)
+			{
+				for(int j=0;j<map.map[0].length;j++){
+				if(map.map[i][j]>0)	
+				{
+					int brickX=j*map.brickwidth+80;
+					int brickY=i*map.brickheight+50;
+					int brickwidth=map.brickwidth;
+					int brickheight=map.brickheight;
+					
+					Rectangle rect=new Rectangle(brickX,brickY,brickwidth,brickheight);
+					Rectangle ballrect=new Rectangle(ballposX,ballposY,20,20);
+					Rectangle brickrect=rect;
+					
+					if(ballrect.intersects(brickrect))
+					{
+						map.setBrickValue(0,i,j);
+						totalbricks--;
+						score+=5;
+						
+						//for left and right intersection
+						if(ballposX+19<=brickrect.x||ballposX+1>=brickrect.x+brickrect.width)
+						{
+							ballXdir=-ballXdir;
+						}
+						else
+						{
+							ballYdir=-ballYdir;
+						}
+						break A;
+					}
+				}
+				}
+			}
+			//map.map.lenght first map is the declared variable, second one is intialized map in constructor 
+			
 			ballposX+=ballXdir;
 			ballposY+=ballYdir;
 			if(ballposX<0)//for left
@@ -116,6 +194,23 @@ public class Gameplay extends JPanel implements KeyListener,ActionListener {
 			{playerX=10;}
 		else
 			{moveLeft();}
+	}
+	
+	if(e.getKeyCode()==KeyEvent.VK_ENTER)
+	{//for restart
+		if(!play)
+		{
+			play=true;
+			ballposX=120;
+			ballposY=350;
+			ballXdir=-1;
+			ballYdir=-2;
+			playerX=310;
+			score=0;
+			totalbricks=21;
+			map=new MapGenerator(3,7);
+			repaint();
+		}
 	}
 }
  
